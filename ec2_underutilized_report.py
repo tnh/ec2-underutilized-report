@@ -170,7 +170,16 @@ response = self.ec2_client.describe_instances(InstanceIds=[instance_id])
                 return response['Datapoints'][0][statistic]
             return 0
         except Exception as e:
-            logger.error(f"Error getting {metric_name} for {instance_id}: {e}")
+return response['Datapoints'][0][statistic]
+            return 0
+        except Exception as e:
+            # import re  # Used for sanitizing input before logging
+            sanitized_metric_name = re.sub(r'[
+\r\t]', '', metric_name)
+            sanitized_instance_id = re.sub(r'[
+\r\t]', '', instance_id)
+            logger.error(f"Error getting {sanitized_metric_name} for {sanitized_instance_id}: {str(e)}")
+            return 0
             return 0
     
     def get_instance_metrics(self, instance_id: str) -> Dict[str, Any]:
