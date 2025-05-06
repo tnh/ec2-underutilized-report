@@ -105,7 +105,14 @@ class EC2UtilizationReport:
                 return response['Tags'][0]['Value']
             return "N/A"
         except Exception as e:
-            logger.error(f"Error getting instance name for {instance_id}: {e}")
+return response['Tags'][0]['Value']
+            return "N/A"
+        except Exception as e:
+            # import re  # Used for sanitizing the error message
+            sanitized_error = re.sub(r'[\r
+]', '', str(e))  # Remove newline characters
+            logger.error(f"Error getting instance name for {instance_id}: {sanitized_error}")
+            return "N/A"
             return "N/A"
     
     def get_instance_type(self, instance_id: str) -> str:
