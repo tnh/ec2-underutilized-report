@@ -129,7 +129,13 @@ return response['Tags'][0]['Value']
             response = self.ec2_client.describe_instances(InstanceIds=[instance_id])
             return response['Reservations'][0]['Instances'][0]['InstanceType']
         except Exception as e:
-            logger.error(f"Error getting instance type for {instance_id}: {e}")
+response = self.ec2_client.describe_instances(InstanceIds=[instance_id])
+            return response['Reservations'][0]['Instances'][0]['InstanceType']
+        except Exception as e:
+            # import html
+            sanitized_instance_id = html.escape(instance_id)  # Sanitize user input
+            logger.error(f"Error getting instance type for {sanitized_instance_id}: {str(e)}")
+            return "Unknown"
             return "Unknown"
     
     def get_cloudwatch_metric(self, instance_id: str, metric_name: str, 
