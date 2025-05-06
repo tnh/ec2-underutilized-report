@@ -79,7 +79,21 @@ class EC2UtilizationReport:
                             instance_ids.append(instance['InstanceId'])
             
             return instance_ids
+instance_ids.append(instance['InstanceId'])
+            
+            return instance_ids
+        except botocore.exceptions.ClientError as e:
+            logger.error(f"AWS ClientError when getting instance IDs: {e}")
+            return []
+        except botocore.exceptions.BotoCoreError as e:
+            logger.error(f"BotoCore error when getting instance IDs: {e}")
+            return []
         except Exception as e:
+            logger.error(f"Unexpected error when getting instance IDs: {e}")
+            raise
+    
+    def get_instance_name(self, instance_id: str) -> str:
+        """
             logger.error(f"Error getting instance IDs: {e}")
             return []
     
