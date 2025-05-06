@@ -183,7 +183,61 @@ response = self.ec2_client.describe_instances(InstanceIds=[instance_id])
         Returns:
             Dictionary containing all instance metrics and metadata
         """
-        logger.info(f"Checking instance {instance_id}")
+Get all metrics for an EC2 instance
+        
+        Args:
+            instance_id: The EC2 instance ID
+            
+        Returns:
+            Dictionary containing all instance metrics and metadata
+        """
+        # import re  # For input sanitization
+        
+        sanitized_instance_id = re.sub(r'[^\w\-]', '', instance_id)  # Sanitize input
+        logger.info(f"Checking instance {sanitized_instance_id}")
+        
+        # Get instance metadata
+        name_tag = self.get_instance_name(sanitized_instance_id)
+        instance_type = self.get_instance_type(sanitized_instance_id)
+        
+        # Get utilization metrics
+        cpu_util = self.get_cloudwatch_metric(
+            sanitized_instance_id, 'CPUUtilization', 'AWS/EC2')
+        mem_util = self.get_cloudwatch_metric(
+            sanitized_instance_id, 'mem_used_percent', 'CWAgent')
+        
+        # Get enhanced metrics
+        network_in = self.get_cloudwatch_metric(
+            sanitized_instance_id, 'NetworkIn', 'AWS/EC2')
+        network_out = self.get_cloudwatch_metric(
+            sanitized_instance_id, 'NetworkOut', 'AWS/EC2')
+        disk_read = self.get_cloudwatch_metric(
+            sanitized_instance_id, 'DiskReadBytes', 'AWS/EC2')
+        disk_write = self.get_cloudwatch_metric(
+            sanitized_instance_id, 'DiskWriteBytes', 'AWS/EC2')
+        
+        # Format metrics to 2 decimal places
+        cpu_util = round(cpu_util, 2)
+        mem_util = round(mem_util, 2)
+        network_in = round(network_in / (1024 * 1024), 2)  # Convert to MB
+        network_out = round(network_out / (1024 * 1024), 2)  # Convert to MB
+        disk_read = round(disk_read / (1024 * 1024), 2)  # Convert to MB
+        disk_write = round(disk_write / (1024 * 1024), 2)  # Convert to MB
+        
+        # Generate recommendation based on usage patterns
+        recommendation = self.generate_recommendation(
+            cpu_util, mem_util, network_in, network_out)
+        
+        return {
+            'instance_id': sanitized_instance_id,
+            'name': name_tag,
+            'instance_type': instance_type,
+            'cpu_util': cpu_util,
+            'mem_util': mem_util,
+            'network_in': network_in,
+            'network_out': network_out,
+            'disk_read': disk_read,
+            'disk_write': disk_write,
         
         # Get instance metadata
         name_tag = self.get_instance_name(instance_id)
